@@ -35,10 +35,10 @@ import nltk
 nltk.download('stopwords', quiet=True)
 
 
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 MODEL_DIR = os.path.join(BASE_DIR, 'models')
-DATA_FILE = os.path.join(BASE_DIR, '..', 'spam.csv')
+DATA_FILE = os.path.join(BASE_DIR, "spam.csv")
 
 os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(MODEL_DIR, exist_ok=True)

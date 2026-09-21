@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Historique des predictions{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-clock-history"></i> Historique des predictions</h2>
+
+<div class="card">
+    <div class="card-header">Predictions recentes</div>
+    <div class="card-body p-0">
+        {% if predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Sujet</th>
+                        <th>Prediction</th>
+                        <th>Probabilite</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in predictions %}
+                    <tr>
+                        <td class="text-nowrap">{{ p.date }}</td>
+                        <td>{{ p.subject }}</td>
+                        <td>
+                            {% if p.label == 'spam' %}
+                            <span class="badge bg-danger">Spam</span>
+                            {% else %}
+                            <span class="badge bg-success">Ham</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.probability }}%</td>
+                        <td><small class="text-muted">{{ p.message[:60] }}{% if p.message|length > 60 %}...{% endif %}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Aucune prediction pour l'instant. Utilisez la page <a href="{{ url_for('test_page') }}">Test</a> pour analyser un email.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

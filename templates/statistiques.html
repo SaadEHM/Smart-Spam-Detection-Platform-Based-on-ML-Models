@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Statistiques du modele{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-bar-chart"></i> Statistiques du modele</h2>
+
+<div class="alert alert-info">
+    <i class="bi bi-cpu"></i> Modele actuel : <strong>{{ meta.current_model }}</strong>
+    <span class="badge bg-primary ms-2">{{ '%.2f' % (meta.current_accuracy * 100) }}% accuracy</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value">{{ '%.2f' % (meta.current_metrics.accuracy * 100) }}%</div><div class="stat-label">Accuracy</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value text-warning">{{ '%.2f' % (meta.current_metrics.precision * 100) }}%</div><div class="stat-label">Precision</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value text-danger">{{ '%.2f' % (meta.current_metrics.recall * 100) }}%</div><div class="stat-label">Recall</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value text-info">{{ '%.2f' % (meta.current_metrics.f1 * 100) }}%</div><div class="stat-label">F1-score</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-shield-check"></i> Metriques du modele (entraine avec SMOTE)</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <div class="metric-box"><div class="metric-title">ROC AUC</div><div class="metric-value text-info">{{ '%.4f' % meta.current_metrics.roc_auc }}</div></div>
+                    </div>
+                    <div class="col-md-9 col-12">
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle"></i>
+                            Le modele a ete entraine sur des donnees reequilibrees par <strong>SMOTE</strong> (application sur l'entrainement uniquement).
+                            Le recall de <strong>{{ '%.1f' % (meta.current_metrics.recall * 100) }}%</strong> signifie que la grande majorite des spams sont bien detectes.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-table"></i> Comparaison des modeles (sur le test reel)</div>
+            <div class="card-body table-responsive">
+                <table class="table table-sm table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Modele</th>
+                            <th class="text-center">Accuracy</th>
+                            <th class="text-center">Precision</th>
+                            <th class="text-center">Recall</th>
+                            <th class="text-center">F1-Score</th>
+                            <th class="text-center">ROC-AUC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr {% if r.Model == meta.current_model %}class="table-primary"{% endif %}>
+                            <td>{{ r.Model }}</td>
+                            <td class="text-center">{{ '%.2f' % (r.Accuracy * 100) }}%</td>
+                            <td class="text-center">{{ '%.2f' % (r.Precision * 100) }}%</td>
+                            <td class="text-center">{{ '%.2f' % (r.Recall * 100) }}%</td>
+                            <td class="text-center">{{ '%.2f' % (r['F1-Score'] * 100) }}%</td>
+                            <td class="text-center">{{ '%.4f' % r['ROC-AUC'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-graph-up"></i> Courbe ROC du modele actuel</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='roc_curve.png') }}" class="img-fluid rounded" alt="Courbe ROC"></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-graph-up-arrow"></i> Courbe Precision-Recall</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='pr_curve.png') }}" class="img-fluid rounded" alt="Precision-Recall"></div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-secondary mt-4 mb-0">
+    <i class="bi bi-info-circle"></i>
+    Le modele actuel peut etre change depuis la page <a href="{{ url_for('train_page') }}">Entrainement</a>.
+    Tous les graphes de la partie Machine Learning sont consultables dans la page <a href="{{ url_for('eda_page') }}">EDA</a>.
+</div>
+
+{% endblock %}

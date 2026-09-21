@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}EDA - Analyse des donnees{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-graph-up"></i> Analyse Exploratoire des Donnees</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value">{{ eda.n_samples }}</div><div class="stat-label">Nombre total d'emails</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value">{{ eda.n_columns }}</div><div class="stat-label">Nombre de colonnes</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value">{{ eda.n_missing }}</div><div class="stat-label">Valeurs manquantes (apres nettoyage)</div>
+        </div></div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100"><div class="card-body">
+            <div class="stat-value">{{ eda.spam_pct }}%</div><div class="stat-label">Proportion de spam</div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Graphique 1 : Repartition Spam / Ham</div>
+            <div class="card-body"><canvas id="chartSpamHam"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Graphique 2 : Nombre moyen de mots</div>
+            <div class="card-body"><canvas id="chartAvgWords"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">Graphique 3 : Distribution de la longueur des emails</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='len_hist.png') }}" class="img-fluid rounded" alt="Histogramme longueur"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Graphique 4 : WordCloud des Spam</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='wc_spam.png') }}" class="img-fluid rounded" alt="Wordcloud spam"></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Graphique 5 : WordCloud des Ham</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='wc_ham.png') }}" class="img-fluid rounded" alt="Wordcloud ham"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Top 20 mots dans les Spam</div>
+            <div class="card-body"><canvas id="chartTopSpam"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Top 20 mots dans les Ham</div>
+            <div class="card-body"><canvas id="chartTopHam"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-shuffle"></i> Balancing des classes (SMOTE)</div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Le dataset est desequilibre ({{ eda.spam_pct }}% spam / {{ eda.ham_pct }}% ham).
+                    On applique <strong>SMOTE</strong> (<em>Synthetic Minority Over-sampling Technique</em>)
+                    uniquement sur l'ensemble d'entrainement pour egaliser les classes et eviter un biais du modele vers "ham".
+                    L'ensemble de test reste reel pour une evaluation honnete.
+                </p>
+                <div class="text-center"><img src="{{ url_for('static', filename='smote_chart.png') }}" class="img-fluid rounded" alt="SMOTE avant/apres"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mt-5 mb-3"><i class="bi bi-robot"></i> Machine Learning - Performances des modeles</h4>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">Comparaison des performances des modeles</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='perf_bar.png') }}" class="img-fluid rounded" alt="Comparaison performances"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">Heatmap des performances</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='perf_heatmap.png') }}" class="img-fluid rounded" alt="Heatmap performances"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">Courbes ROC - Tous les modeles</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='roc_all.png') }}" class="img-fluid rounded" alt="Courbes ROC"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">Matrice de confusion du meilleur modele</div>
+            <div class="card-body text-center"><img src="{{ url_for('static', filename='confusion_best.png') }}" class="img-fluid rounded" alt="Matrice de confusion"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    drawDoughnut('chartSpamHam', ['Spam', 'Ham'], [{{ eda.n_spam }}, {{ eda.n_ham }}], ['#dc3545', '#198754']);
+
+    drawBar('chartAvgWords', ['Spam', 'Ham'],
+            [{{ eda.avg_words_spam }}, {{ eda.avg_words_ham }}],
+            'Nombre moyen de mots', ['#dc3545', '#198754']);
+
+    drawHorizontalBar('chartTopSpam',
+            {{ eda.top_spam_words | tojson }},
+            {{ eda.top_spam_counts | tojson }},
+            'Frequence dans les spams', '#dc3545');
+
+    drawHorizontalBar('chartTopHam',
+            {{ eda.top_ham_words | tojson }},
+            {{ eda.top_ham_counts | tojson }},
+            'Frequence dans les ham', '#198754');
+</script>
+{% endblock %}

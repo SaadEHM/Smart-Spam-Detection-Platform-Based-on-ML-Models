@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Entrainement du modele{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-cpu"></i> Entrainer le modele</h2>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Choisir l'algorithme</div>
+            <div class="card-body">
+                <div class="algo-list">
+                    <label class="algo-option"><input type="radio" name="algo" value="naive_bayes" checked> Naive Bayes</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="logistic"> Logistic Regression</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="svm"> SVM</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="random_forest"> Random Forest</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="gradient_boosting"> Gradient Boosting</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="knn"> KNN</label>
+                    <label class="algo-option"><input type="radio" name="algo" value="decision_tree"> Decision Tree</label>
+                </div>
+                <button id="btn-train" class="btn btn-primary w-100 mt-3" onclick="trainModel()">
+                    <i class="bi bi-play"></i> Entrainer
+                </button>
+                <div id="train-spinner" class="text-center mt-3 d-none">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">Entrainement en cours...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div id="train-result" class="d-none">
+            <div class="card mb-3">
+                <div class="card-header">Resultats <span id="trained-algo" class="badge bg-primary"></span></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <div class="metric-box"><div class="metric-title">Accuracy</div><div class="metric-value" id="m-accuracy">-</div></div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="metric-box"><div class="metric-title">Precision</div><div class="metric-value" id="m-precision">-</div></div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="metric-box"><div class="metric-title">Recall</div><div class="metric-value" id="m-recall">-</div></div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="metric-box"><div class="metric-title">F1-score</div><div class="metric-value" id="m-f1">-</div></div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="metric-title">ROC AUC</div>
+                        <div class="metric-value text-info" id="m-auc">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Matrice de confusion</div>
+                <div class="card-body">
+                    <table class="table table-bordered table-sm text-center confusion-matrix">
+                        <thead><tr><th></th><th>Predit Ham</th><th>Predit Spam</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <th>Reel Ham</th>
+                                <td id="cm-tn" class="cm-good">-</td>
+                                <td id="cm-fp" class="cm-bad">-</td>
+                            </tr>
+                            <tr>
+                                <th>Reel Spam</th>
+                                <td id="cm-fn" class="cm-bad">-</td>
+                                <td id="cm-tp" class="cm-good">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="alert alert-success mt-3 mb-0">
+                        <i class="bi bi-check-circle"></i> Le modele a ete entraine et sauvegarde. Il sera utilise par la page <strong>Test</strong> et <strong>Statistiques</strong>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const trainAlgos = {
+        naive_bayes: 'Naive Bayes',
+        logistic: 'Logistic Regression',
+        svm: 'SVM',
+        random_forest: 'Random Forest',
+        gradient_boosting: 'Gradient Boosting',
+        knn: 'KNN',
+        decision_tree: 'Decision Tree'
+    };
+
+    async function trainModel() {
+        const algo = document.querySelector('input[name="algo"]:checked').value;
+        const btn = document.getElementById('btn-train');
+        const spinner = document.getElementById('train-spinner');
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        try {
+            const res = await fetch('/api/train', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ algo: algo })
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); return; }
+
+            document.getElementById('train-result').classList.remove('d-none');
+            document.getElementById('trained-algo').textContent = trainAlgos[algo];
+            document.getElementById('m-accuracy').textContent = (data.metrics.accuracy * 100).toFixed(2) + '%';
+            document.getElementById('m-precision').textContent = (data.metrics.precision * 100).toFixed(2) + '%';
+            document.getElementById('m-recall').textContent = (data.metrics.recall * 100).toFixed(2) + '%';
+            document.getElementById('m-f1').textContent = (data.metrics.f1 * 100).toFixed(2) + '%';
+            document.getElementById('m-auc').textContent = data.metrics.roc_auc.toFixed(4);
+
+            const cm = data.confusion_matrix;
+            document.getElementById('cm-tn').textContent = cm[0][0];
+            document.getElementById('cm-fp').textContent = cm[0][1];
+            document.getElementById('cm-fn').textContent = cm[1][0];
+            document.getElementById('cm-tp').textContent = cm[1][1];
+        } catch (err) {
+            alert('Erreur : ' + err);
+        } finally {
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Tester un email{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-envelope-open"></i> Tester un email</h2>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Coller un email</div>
+            <div class="card-body">
+                <textarea id="test-message" rows="8" class="form-control mb-3" placeholder="Bonjour, Vous avez gagne 10000€. Cliquez ici..."></textarea>
+                <div class="d-flex gap-2 mb-3">
+                    <button id="btn-test" class="btn btn-primary flex-grow-1" onclick="testMessage()">
+                        <i class="bi bi-search"></i> Analyser
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearTest()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="examples">
+                    <span class="text-muted">Exemples :</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="useExample('spam')">Spam</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="useExample('ham')">Ham</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div id="test-result" class="d-none">
+            <div class="card mb-3">
+                <div class="card-body text-center" id="result-box">
+                    <div class="result-verdict" id="result-verdict">-</div>
+                    <div class="result-prob" id="result-prob">-</div>
+                    <div class="progress mt-3" style="height: 18px;">
+                        <div class="progress-bar" id="result-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="row mt-3 text-center">
+                        <div class="col-6"><small class="text-muted">Probabilite spam</small><div id="prob-spam" class="fw-bold text-danger">-</div></div>
+                        <div class="col-6"><small class="text-muted">Probabilite ham</small><div id="prob-ham" class="fw-bold text-success">-</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="steps-section" class="d-none mt-4">
+    <div class="card">
+        <div class="card-header"><i class="bi bi-list-ol"></i> Etapes du traitement</div>
+        <div class="card-body">
+            <div class="row g-3" id="steps-grid"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const SPAM_EXAMPLE = "WINNER!! As a valued network customer you have been selected to receive a prize! To claim your $5000 cash reward, call 0871 170 6024 now.";
+    const HAM_EXAMPLE = "Hey, are you coming to the meeting tomorrow at 3pm? Let me know so I can prepare the documents.";
+
+    function useExample(type) {
+        document.getElementById('test-message').value = type === 'spam' ? SPAM_EXAMPLE : HAM_EXAMPLE;
+        testMessage();
+    }
+
+    async function testMessage() {
+        const message = document.getElementById('test-message').value.trim();
+        const btn = document.getElementById('btn-test');
+
+        if (!message) { alert('Veuillez entrer un email.'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyse...';
+
+        try {
+            const res = await fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); return; }
+
+            const isSpam = data.label === 'spam';
+            const box = document.getElementById('result-box');
+            box.classList.remove('spam-result', 'ham-result');
+            box.classList.add(isSpam ? 'spam-result' : 'ham-result');
+
+            document.getElementById('result-verdict').textContent = data.label.toUpperCase();
+            document.getElementById('result-verdict').className = 'result-verdict ' + (isSpam ? 'text-danger' : 'text-success');
+            document.getElementById('result-prob').textContent = 'Probabilite : ' + data.confidence + '%';
+            document.getElementById('result-bar').style.width = data.confidence + '%';
+            document.getElementById('result-bar').className = 'progress-bar ' + (isSpam ? 'bg-danger' : 'bg-success');
+            document.getElementById('prob-spam').textContent = data.prob_spam + '%';
+            document.getElementById('prob-ham').textContent = data.prob_ham + '%';
+            document.getElementById('test-result').classList.remove('d-none');
+
+            const steps = document.getElementById('steps-grid');
+            steps.innerHTML = '';
+            data.steps.forEach(s => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6';
+                col.innerHTML = '<div class="step-block"><div class="step-title">' + s.title + '</div>' +
+                    '<div class="step-text"><code>' + (s.text || '(vide)') + '</code></div></div>';
+                steps.appendChild(col);
+            });
+            document.getElementById('steps-section').classList.remove('d-none');
+        } catch (err) {
+            alert('Erreur : ' + err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-search"></i> Analyser';
+        }
+    }
+
+    function clearTest() {
+        document.getElementById('test-message').value = '';
+        document.getElementById('test-result').classList.add('d-none');
+        document.getElementById('steps-section').classList.add('d-none');
+    }
+</script>
+{% endblock %}

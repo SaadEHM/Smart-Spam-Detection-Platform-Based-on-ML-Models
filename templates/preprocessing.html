@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Preprocessing - Pipeline NLP{% endblock %}
+{% block content %}
+
+<h2 class="page-title"><i class="bi bi-sliders"></i> Pipeline de Preprocessing</h2>
+
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> Exemple utilise : <code>"{{ example }}"</code>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Etapes du preprocessing</div>
+            <div class="card-body">
+                <div class="pipeline-flow">
+                    <div class="pipeline-step">Email brut</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Mise en minuscules</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Suppression HTML, URLs, emails</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Suppression chiffres et ponctuation</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Suppression des stopwords</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Stemmisation (PorterStemmer)</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step">Vectorisation TF-IDF</div>
+                    <div class="pipeline-arrow"><i class="bi bi-arrow-down"></i></div>
+                    <div class="pipeline-step highlight">Prediction</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">Texte apres chaque etape</div>
+            <div class="card-body">
+                {% for title, text in steps %}
+                <div class="step-block">
+                    <div class="step-title">{{ title }}</div>
+                    <div class="step-text">
+                        {% if text %}<code>{{ text }}</code>
+                        {% else %}<span class="text-muted">(texte vide)</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

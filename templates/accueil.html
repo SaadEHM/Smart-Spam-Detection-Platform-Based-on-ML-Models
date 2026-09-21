@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Accueil - Detection de Spam{% endblock %}
+{% block content %}
+
+<div class="hero text-center mb-4">
+    <div class="hero-icon"><i class="bi bi-envelope-shield"></i></div>
+    <h1 class="display-5 fw-bold">Detection des Emails Spam</h1>
+    <p class="lead text-muted">
+        Cette application utilise l'analyse exploratoire des donnees (EDA)
+        et des algorithmes de Machine Learning pour detecter automatiquement les emails spam.
+    </p>
+    <a href="{{ url_for('test_page') }}" class="btn btn-primary btn-lg mt-2">
+        <i class="bi bi-envelope-open"></i> Tester un email maintenant
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100">
+            <div class="card-body">
+                <div class="stat-value">{{ eda.n_samples }}</div>
+                <div class="stat-label">Nombre d'emails</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100 border-danger">
+            <div class="card-body">
+                <div class="stat-value text-danger">{{ eda.n_spam }}</div>
+                <div class="stat-label">Nombre de spam</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100 border-success">
+            <div class="card-body">
+                <div class="stat-value text-success">{{ eda.n_ham }}</div>
+                <div class="stat-label">Nombre de non-spam</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card text-center h-100 border-info">
+            <div class="card-body">
+                <div class="stat-value text-info">{{ '%.1f' % (meta.best_accuracy * 100) }}%</div>
+                <div class="stat-label">Accuracy du modele</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-pie-chart"></i> Repartition Spam / Ham</div>
+            <div class="card-body"><canvas id="chartRepartition"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightning"></i> Pipeline du projet</div>
+            <div class="card-body">
+                <ol class="pipeline-list">
+                    <li>Dataset</li>
+                    <li>EDA</li>
+                    <li>Nettoyage du texte</li>
+                    <li>Vectorisation TF-IDF</li>
+                    <li>Split Train/Test</li>
+                    <li>Machine Learning</li>
+                    <li>Evaluation</li>
+                    <li>Sauvegarde du modele</li>
+                    <li>Interface utilisateur</li>
+                    <li>Prediction</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const repartition = {{ {'spam': eda.n_spam, 'ham': eda.n_ham} | tojson }};
+    drawDoughnut('chartRepartition', ['Spam', 'Ham'], [repartition.spam, repartition.ham], ['#dc3545', '#198754']);
+</script>
+{% endblock %}

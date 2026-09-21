@@ -31,6 +31,10 @@ from sklearn.metrics import (
 )
 from imblearn.over_sampling import SMOTE
 
+import nltk
+nltk.download('stopwords', quiet=True)
+
+
 BASE_DIR = os.path.dirname(__file__)
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 MODEL_DIR = os.path.join(BASE_DIR, 'models')
